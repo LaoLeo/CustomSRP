@@ -14,7 +14,7 @@ public partial class CameraRenderer
     ScriptableRenderContext context;
     Camera camera;
 
-    public void Render(ScriptableRenderContext context, Camera camera)
+    public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing)
     {
         this.context = context;
         this.camera = camera;
@@ -33,7 +33,7 @@ public partial class CameraRenderer
 
         Setup();
         //绘制几何体
-        DrawVisibleGeometry();
+        DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
         //绘制SRP不支持的着色器类型
         DrawUnsupportedShaders();
         //绘制Gizmos
@@ -77,7 +77,7 @@ public partial class CameraRenderer
     /// <summary>
     /// 绘制可见物
     /// </summary>
-    void DrawVisibleGeometry()
+    void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing)
     {
         //设置绘制顺序和指定渲染相机
         var sortingSetting = new SortingSettings(camera)
@@ -85,7 +85,11 @@ public partial class CameraRenderer
             criteria = SortingCriteria.CommonOpaque
         };
         //设置渲染的Shader Pass和排序模式
-        var drawingSetting = new DrawingSettings(unlitShaderTagId, sortingSetting);
+        var drawingSetting = new DrawingSettings(unlitShaderTagId, sortingSetting){
+            // 设置渲染时批处理的使用状态
+            enableDynamicBatching = useDynamicBatching,
+            enableInstancing = useGPUInstancing
+        };
         //只绘制RenderQueue为opaque不透明的物体
         var filteringSetting = new FilteringSettings(RenderQueueRange.opaque);
 
